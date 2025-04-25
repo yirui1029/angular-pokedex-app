@@ -1,8 +1,9 @@
-import { Component, computed, signal } from '@angular/core';
- import { POKEMON_LIST } from './pokemon-list.fake';
+import { Component, computed, inject, signal } from '@angular/core';
+
  import { Pokemon } from './pokemon.model';
 import { PokemonBorderDirective } from './pokemon-border.directive';
 import { DatePipe } from '@angular/common';
+import { PokemonService } from './pokemon.service';
 
 
  
@@ -13,9 +14,20 @@ import { DatePipe } from '@angular/common';
    
    templateUrl: './app.component.html',
    styleUrl: './app.component.css',
+   providers: [PokemonService],
  })
  export class AppComponent {
-   pokemonList = signal(POKEMON_LIST);
+   readonly #pokemonservice=inject(PokemonService);
+
+   readonly pokemonList = signal(this.#pokemonservice.getPokemonList());
+   readonly searchTerm=signal('')
+   
+  readonly filteredPokemonList=computed(() => {
+    const searchTerm=this.searchTerm();
+    const pokemonList=this.pokemonList();
+     return pokemonList.filter(pokemon=>pokemon.name.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()));
+   });
+   
  
    size(pokemon: Pokemon) {
      if (pokemon.life <= 15) {
